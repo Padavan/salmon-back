@@ -1,0 +1,241 @@
+openapi: 3.0.3
+info:
+  title: Salmon - OpenAPI 3.0
+  description: |-
+  contact:
+    email: padavankun@gmail.com
+  license:
+    name: MIT
+    url: about:blank
+  version: 1.0.1
+servers:
+  - url: https://localhost:8081
+tags:
+  - name: board
+    description: Everything about your Board
+  - name: post
+    description: Thread info
+  - name: thread
+    description: Operations about threads
+  - name: auth
+    description: Auth process
+paths:
+  /boards:
+    get:
+      tags:
+        - board
+      summary: List of all boards
+      description: Add a new pet to the store
+      operationId: getBoardList
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Board'          
+        '400':
+          description: Invalid input
+        '422':
+          description: Validation exception
+  /board/threads:
+    get:
+      tags:
+        - thread
+      summary: Get all thread for boards
+      description: Multiple status values can be provided with comma separated strings
+      operationId: getThreadList
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Thread'
+        '400':
+          description: Invalid status value
+  /board/thread/create:
+    post:
+      tags:
+        - thread
+      summary: Create thread
+      description: Create thread based on title and text
+      operationId: createThread
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewThread'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+        '400':
+          description: Invalid tag value
+  /board/thread/{threadId}/posts:
+    get:
+      tags:
+        - post
+      summary: Find pet by ID
+      description: Returns a single pet
+      operationId: getPostList
+      parameters:
+        - name: threadId
+          in: path
+          description: ID of pet to return
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'          
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Pet not found
+  /board/thread/{threadId}/post/create:
+    post:
+      tags:
+        - post
+      summary: uploads an image
+      description: ''
+      operationId: createPost
+      parameters:
+        - name: threadId
+          in: path
+          description: ID of pet to update
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewPost'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+  /authtoken:
+    post:
+      tags:
+        - auth
+      summary: Authenticate
+      description: Get some kind of token to allow posting
+      operationId: authenticatePost
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Credentials'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '400':
+          description: Invalid input
+        '422':
+          description: Validation exception
+components:
+  schemas:
+    Thread:
+      type: object
+      properties:
+        threadId:
+          type: integer
+          format: int64
+        createdAt:
+          type: string
+          format: date-time
+        title:
+          type: string
+        text:
+          type: string
+        status:
+          type: string
+          enum:
+            - flagged
+        complete:
+          type: boolean
+    NewThread:
+      type: object
+      properties:
+        title:
+          type: string
+        text:
+          type: string
+    Post:
+      type: object
+      properties:
+        postId:
+          type: integer
+          format: int64
+        threadId:
+          type: integer
+          format: int64
+        text:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    NewPost:
+      type: object
+      properties:
+        text:
+          type: string
+    Credentials:
+      type: object
+      properties:
+        auth:
+          type: string
+    ApiResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        type:
+          type: string
+        message:
+          type: string
+    Board:
+      type: object
+      properties:
+        name:
+          type: string
+  # securitySchemes:
+  #   petstore_auth:
+  #     type: oauth2
+  #     flows:
+  #       implicit:
+  #         authorizationUrl: https://petstore3.swagger.io/oauth/authorize
+  #         scopes:
+  #           write:pets: modify pets in your account
+  #           read:pets: read your pets
+  #   api_key:
+  #     type: apiKey
+  #     name: api_key
+  #     in: header 
